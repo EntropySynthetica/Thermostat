@@ -45,22 +45,24 @@ func get_stats(ip string) {
         log.Fatal(err)
     }
 
-    // Show the data we got
-    // fmt.Println(string(response_data))
-
     var response_stats thermo_stats
     json.Unmarshal([]byte(response_data), &response_stats)
 
     // Determine the Thermostat Mode
-    if response_stats.Tmode == 0 {
-        fmt.Println("Thermostat Mode = Off")
-    } else if response_stats.Tmode == 1 {
-        fmt.Println("Thermostat Mode = Heat")
-    } else if response_stats.Tmode == 2 {
-        fmt.Println("Thermostat Mode = Cool")
-    } else if response_stats.Tmode == 3 {
-        fmt.Println("Thermostat Mode = Auto")
+    var Tmode_text string
+    switch response_stats.Tmode {
+        case 0:
+            Tmode_text = "Off"
+        case 1:
+            Tmode_text = "Heat"
+        case 2:
+            Tmode_text = "Cool"
+        case 3:
+            Tmode_text = "Auto"
+        default:
+            Tmode_text = "Unknown"
     }
+    fmt.Println("Thermostat Mode = " + Tmode_text)
 
     // Show current Temp
     fmt.Println("Current Temp = " + strconv.FormatFloat(response_stats.Temp, 'f', -1, 64))
@@ -72,32 +74,49 @@ func get_stats(ip string) {
         target_temp = strconv.FormatFloat(response_stats.THeat, 'f', -1, 64)
     } else if response_stats.TCool != 0 {
         target_temp = strconv.FormatFloat(response_stats.TCool, 'f', -1, 64)
+    } else {
+        target_temp = "Unknown"
     }
 
     fmt.Println("Target Temp = " + target_temp)
 
     // Show the Operational State 
-    if response_stats.Tstate == 0 {
-        fmt.Println("Operating Status = Off")
-    } else if response_stats.Tstate == 1 {
-        fmt.Println("Operating Status = Heating")
-    } else if response_stats.Tstate == 2 {
-        fmt.Println("Operating Status = Cooling")
+    var Tstate_text string
+    switch response_stats.Tstate {
+        case 0:
+            Tstate_text = "Off"
+        case 1: 
+            Tstate_text = "Heating"
+        case 2:
+            Tstate_text = "Cooling"
+        default: 
+            Tstate_text = "Unknown"
     }
+    fmt.Println("Operating Status = " + Tstate_text)
 
     // Show if an Override is active
-    if response_stats.Override == 0 {
-        fmt.Println("Override Off")
-    } else if response_stats.Override == 1 {
-        fmt.Println("Override On")
+    var Override_text string
+    switch response_stats.Override {
+        case 0:
+            Override_text = "Off"
+        case 1: 
+            Override_text = "On"
+        default:
+            Override_text = "Unknown"
     }
+    fmt.Println("Override " + Override_text)
 
     // Show if a manual hold is active
-    if response_stats.Hold == 0 {
-        fmt.Println("Manual Hold Off")
-    } else if response_stats.Hold ==1 {
-        fmt.Println("Manual Hold On")
+    var Hold_text string
+    switch response_stats.Hold {
+        case 0:
+            Hold_text = "Off"
+        case 1: 
+            Hold_text = "On"
+        default:
+            Hold_text = "Unknown"
     }
+    fmt.Println("Manual Hold " + Hold_text)
 
 }
 
