@@ -45,6 +45,7 @@ func get_stats(ip string) {
         log.Fatal(err)
     }
 
+    // Parse the JSON
     var response_stats thermo_stats
     json.Unmarshal([]byte(response_data), &response_stats)
 
@@ -69,15 +70,14 @@ func get_stats(ip string) {
 
     // The target temp is returned from a diffrent var depending on if the thermostat is in heat or cool mode.  Lets check both and return which ever is not empty
     var target_temp string
-
-    if response_stats.THeat != 0 {
-        target_temp = strconv.FormatFloat(response_stats.THeat, 'f', -1, 64)
-    } else if response_stats.TCool != 0 {
-        target_temp = strconv.FormatFloat(response_stats.TCool, 'f', -1, 64)
-    } else {
-        target_temp = "Unknown"
+    switch {
+        case response_stats.THeat != 0:
+            target_temp = strconv.FormatFloat(response_stats.THeat, 'f', -1, 64)
+        case response_stats.TCool != 0:
+            target_temp = strconv.FormatFloat(response_stats.TCool, 'f', -1, 64)
+        default:
+            target_temp = "Unknown"
     }
-
     fmt.Println("Target Temp = " + target_temp)
 
     // Show the Operational State 
