@@ -8,6 +8,8 @@ import (
     "os"
     "encoding/json"
     "strconv"
+    "flag"
+    "strings"
     "github.com/joho/godotenv"
 )
 
@@ -28,6 +30,7 @@ type thermo_stats struct {
 	} `json:"time"`
 	TTypePost int `json:"t_type_post"`
 }
+
 
 func get_stats(ip string) {
     poll_url := "http://" + ip + "/tstat"
@@ -120,16 +123,79 @@ func get_stats(ip string) {
 
 }
 
+
+func set_temp(ip string, temp int){
+
+    poll_url := "http://" + ip + "/tstat"
+
+    // Poll the API to find the Thermostat Mode.
+    response, err := http.Get(poll_url)
+
+    if err != nil {
+        fmt.Print(err.Error())
+        os.Exit(1)
+    }
+
+    response_data, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    var response_stats thermo_stats
+    json.Unmarshal([]byte(response_data), &response_stats)
+
+    // We will craft our payload to match the mode the thermostat is currently in.
+    var query string
+    if response_stats.Tmode == 1 {
+        query = ("{\"tmode\":1,\"t_heat\":" + strconv.Itoa(temp) + "}")        
+    } else if response_stats.Tmode == 2 {
+        query = ("{\"tmode\":2,\"t_cool\":" + strconv.Itoa(temp) + "}") 
+    }
+
+    // Send the temp set request to the Thermostat
+    payload := strings.NewReader(query)
+
+    req, err := http.NewRequest("POST", poll_url, payload)
+
+    if err != nil {
+        fmt.Print(err.Error())
+        os.Exit(1)
+    }
+
+    req.Header.Add("Content-Type", "application/json")
+
+    post_response, err := http.DefaultClient.Do(req)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    defer post_response.Body.Close()
+
+    fmt.Println("Set Temp to " + strconv.Itoa(temp))
+}
+
+
 func main() {
+
+    // Parse CLI Flags
+    tempPtr := flag.Int("temp", 0, "Thermostate temp to set in degrees F")
+    modePtr := flag.String("mode", "none", "Operating Mode, Cool or Heat")
+    flag.Parse()
 
     // Get vars from .env file
     err := godotenv.Load()
     if err != nil {
         log.Fatal("Error loading .env file")
     }
-
     thermostat_ip := os.Getenv("THERMOSTAT_IP")
 
-    // Get Thermostat Stats
-    get_stats(thermostat_ip)
+    // If the temp flag was set lets adjust the temp. 
+    if *tempPtr != 0 {
+        set_temp(thermostat_ip, *tempPtr)
+    }
+
+    // If no arguments were entered poll the thermostat for stats and return them. 
+    if *tempPtr == 0 &&  *modePtr == "none" {
+        get_stats(thermostat_ip)
+    }
 }
