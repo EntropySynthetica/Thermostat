@@ -12,8 +12,6 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-
-	"github.com/joho/godotenv"
 )
 
 const Version = "1.0.0"
@@ -233,12 +231,28 @@ func main() {
 		return
 	}
 
-	// Get vars from .env file
-	err := godotenv.Load()
+	// Get vars from config file
+	jsonFile, err := os.Open(configFile)
+
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println(err)
+		return
 	}
-	thermostat_ip := os.Getenv("THERMOSTAT_IP")
+
+	// Unmarshal the JSON from the file
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var jsonResults Config
+	err = json.Unmarshal(byteValue, &jsonResults)
+
+	if err != nil {
+		fmt.Println("Error reading hosts.json ", err)
+		return
+	}
+
+	jsonFile.Close()
+
+	thermostat_ip := jsonResults.ThermostatIP
 
 	// If the temp flag was set lets adjust the temp.
 	if *tempPtr != 0 {

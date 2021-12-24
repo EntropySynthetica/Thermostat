@@ -2,12 +2,10 @@ module thermostat
 
 go 1.17
 
-require (
-	github.com/AlecAivazis/survey/v2 v2.3.2
-	github.com/joho/godotenv v1.4.0
-)
+require github.com/AlecAivazis/survey/v2 v2.3.2
 
 require (
+	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
