@@ -11,8 +11,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
+
 	"github.com/joho/godotenv"
 )
+
+const Version = "1.0.0"
 
 type thermo_stats struct {
 	Temp     float64 `json:"temp"`
@@ -30,6 +34,46 @@ type thermo_stats struct {
 		Minute int `json:"minute"`
 	} `json:"time"`
 	TTypePost int `json:"t_type_post"`
+}
+
+type Config struct {
+	ThermostatIP string `json:"ThermostatIP"`
+}
+
+func NewFile(configFile string) {
+	configData := Config{}
+	configData.ThermostatIP = "192.168.168.100"
+
+	if _, err := os.Stat(configFile); err == nil {
+		fmt.Println(configFile + " already exists!")
+		confirm := false
+		prompt := &survey.Confirm{
+			Message: "Do you want to overwrite?",
+		}
+		survey.AskOne(prompt, &confirm)
+
+		if confirm == true {
+			file, _ := json.MarshalIndent(configData, "", " ")
+			_ = ioutil.WriteFile(configFile, file, 0644)
+			fmt.Println("New hosts file created at " + configFile)
+		}
+
+	} else {
+		// Check if config directory exists, and make it if it does not.
+		homedir, _ := os.UserHomeDir()
+		_, err := os.Stat(homedir + "/.config/thermostat")
+		if os.IsNotExist(err) {
+			err := os.Mkdir(homedir+"/.config/thermostat", 0755)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		file, _ := json.MarshalIndent(configData, "", " ")
+		_ = ioutil.WriteFile(configFile, file, 0644)
+		fmt.Println("New hosts file created at " + configFile)
+	}
+
 }
 
 func get_stats(ip string) {
@@ -174,11 +218,20 @@ func set_temp(ip string, temp int) {
 }
 
 func main() {
+	homedir, _ := os.UserHomeDir()
+	var configFile string
 
 	// Parse CLI Flags
 	tempPtr := flag.Int("temp", 0, "Thermostate temp to set in degrees F")
 	modePtr := flag.String("mode", "none", "Operating Mode, Cool or Heat")
+	newFile := flag.Bool("new", false, "Create a new config file")
+	flag.StringVar(&configFile, "c", homedir+"/.config/thermostat/config.json", "specify path of config file")
 	flag.Parse()
+
+	if *newFile {
+		NewFile(configFile)
+		return
+	}
 
 	// Get vars from .env file
 	err := godotenv.Load()
