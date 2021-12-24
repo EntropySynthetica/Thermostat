@@ -223,8 +223,15 @@ func main() {
 	tempPtr := flag.Int("temp", 0, "Thermostate temp to set in degrees F")
 	modePtr := flag.String("mode", "none", "Operating Mode, Cool or Heat")
 	newFile := flag.Bool("new", false, "Create a new config file")
+	showVer := flag.Bool("v", false, "Show Version")
 	flag.StringVar(&configFile, "c", homedir+"/.config/thermostat/config.json", "specify path of config file")
 	flag.Parse()
+
+	// Print Version of app
+	if *showVer {
+		fmt.Println("CT50 Thermostat CTL Version: " + Version)
+		return
+	}
 
 	if *newFile {
 		NewFile(configFile)
