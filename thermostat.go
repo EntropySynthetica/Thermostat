@@ -14,7 +14,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 )
 
-const Version = "1.0.0"
+const Version = "1.1.0"
 
 type thermo_stats struct {
 	Temp     float64 `json:"temp"`
