@@ -5,30 +5,28 @@ on:
       - created
 
 jobs:
-  release-linux-amd64:
-    name: release linux/amd64
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v2
+  build-release:
+    name: Build Go Binaries
+    runs-on: ubuntu-latest
 
-    - uses: wangyoucao577/go-release-action@v1.20
+    strategy:
+      matrix:
+        # build and publish in parallel: linux/386, linux/amd64, linux/arm64, windows/386, windows/amd64, darwin/amd64, darwin/arm64
+        goos: [linux, windows, darwin]
+        goarch: ["386", amd64, arm64]
+        exclude:
+          - goarch: "386"
+            goos: darwin
+          - goarch: arm64
+            goos: windows
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: wangyoucao577/go-release-action@v1.36
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        goos: linux
-        goarch: amd64
-        goversion: "https://golang.org/dl/go1.17.5.linux-amd64.tar.gz"
-        binary_name: thermostat
-
-  release-linux-arm:
-    name: release linux/arm
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v2
-
-    - uses: wangyoucao577/go-release-action@v1.20
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        goos: linux
-        goarch: arm
-        goversion: "https://golang.org/dl/go1.17.5.linux-amd64.tar.gz"
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        goversion: "https://golang.org/dl/go1.20.1.linux-amd64.tar.gz"
         binary_name: thermostat
