@@ -113,7 +113,7 @@ func get_stats(ip string) {
 	// Show current Temp
 	fmt.Println("Current Temp = " + strconv.FormatFloat(response_stats.Temp, 'f', -1, 64))
 
-	// The target temp is returned from a diffrent var depending on if the thermostat is in heat or cool mode.  Lets check both and return which ever is not empty
+	// The target temp is returned from a different var depending on if the thermostat is in heat or cool mode.  Lets check both and return which ever is not empty
 	var target_temp string
 	switch {
 	case response_stats.THeat != 0:
@@ -220,7 +220,7 @@ func main() {
 	var configFile string
 
 	// Parse CLI Flags
-	tempPtr := flag.Int("temp", 0, "Thermostate temp to set in degrees F")
+	tempPtr := flag.Int("temp", 0, "Thermostat temp to set in degrees F")
 	modePtr := flag.String("mode", "none", "Operating Mode, Cool or Heat")
 	newFile := flag.Bool("new", false, "Create a new config file")
 	showVer := flag.Bool("v", false, "Show Version")
