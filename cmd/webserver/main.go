@@ -667,10 +667,12 @@ func main() {
 	homedir, _ := os.UserHomeDir()
 	var configFile string
 	var port string
+	var thermostatIPFlag string
 
 	// Parse CLI Flags
 	flag.StringVar(&configFile, "c", homedir+"/.config/thermostat/config.json", "specify path of config file")
 	flag.StringVar(&port, "port", "8080", "port to run the web server on")
+	flag.StringVar(&thermostatIPFlag, "ip", "", "thermostat IP address (overrides config file)")
 	showVer := flag.Bool("v", false, "Show Version")
 	flag.Parse()
 
@@ -680,13 +682,25 @@ func main() {
 		return
 	}
 
-	// Load configuration
-	config, err := loadConfig(configFile)
-	if err != nil {
-		log.Fatalf("Error loading config file: %v\nPlease run 'thermostat --new' to create a config file", err)
+	// Priority: 1. Environment variable, 2. Command line flag, 3. Config file
+	thermostatIP = os.Getenv("THERMOSTAT_IP")
+
+	if thermostatIP == "" && thermostatIPFlag != "" {
+		thermostatIP = thermostatIPFlag
 	}
 
-	thermostatIP = config.ThermostatIP
+	if thermostatIP == "" {
+		// Load configuration from file
+		config, err := loadConfig(configFile)
+		if err != nil {
+			log.Fatalf("Error loading config file: %v\nPlease set THERMOSTAT_IP environment variable, use -ip flag, or run 'thermostat --new' to create a config file", err)
+		}
+		thermostatIP = config.ThermostatIP
+	}
+
+	if thermostatIP == "" {
+		log.Fatal("Thermostat IP not configured. Set THERMOSTAT_IP environment variable, use -ip flag, or configure in config file")
+	}
 
 	// Set up HTTP routes
 	http.HandleFunc("/", handleHome)

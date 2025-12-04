@@ -13,6 +13,9 @@ This repo contains two applications for controlling the Radio Thermostat CT50 Th
 │       └── main.go        # Web server application source
 ├── start-webserver.sh     # Convenience script to start web server
 ├── Makefile              # Build automation
+├── Dockerfile            # Docker container definition
+├── docker-compose.yml    # Docker Compose configuration
+├── .dockerignore         # Docker build exclusions
 ├── bin/
 │   ├── thermostat        # Compiled CLI binary
 │   └── webserver         # Compiled web server binary
@@ -131,6 +134,57 @@ The web server is designed for use on a local network. If you plan to expose it 
 
 # Change server port
 ./bin/webserver -port 3000
+
+# Set thermostat IP via command line
+./bin/webserver -ip 192.168.1.100
+
+# Set thermostat IP via environment variable
+THERMOSTAT_IP=192.168.1.100 ./bin/webserver
+```
+
+**Configuration Priority:**
+1. `THERMOSTAT_IP` environment variable (highest priority)
+2. `-ip` command line flag
+3. Config file at `~/.config/thermostat/config.json` (lowest priority)
+
+### Docker Deployment
+
+#### Using Docker Compose (Recommended)
+```bash
+# Create environment file from example
+cp .env.example .env
+
+# Edit .env and set your thermostat IP
+nano .env
+
+# Build and start the container
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+```
+
+#### Using Docker directly
+```bash
+# Build the image
+docker build -t thermostat-web .
+
+# Run the container
+docker run -d \
+  -p 8080:8080 \
+  -e THERMOSTAT_IP=192.168.1.100 \
+  --name thermostat-web \
+  thermostat-web
+
+# View logs
+docker logs -f thermostat-web
+
+# Stop the container
+docker stop thermostat-web
+docker rm thermostat-web
 ```
 ---
 

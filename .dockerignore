@@ -1,0 +1,9 @@
+.git
+.github
+bin/
+*.md
+LICENSE
+config.example.json
+start-webserver.sh
+Makefile
+thermostat.go

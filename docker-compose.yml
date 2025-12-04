@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  thermostat-web:
+    build: .
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      - THERMOSTAT_IP=${THERMOSTAT_IP}
+    restart: unless-stopped
