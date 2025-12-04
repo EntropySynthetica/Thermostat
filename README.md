@@ -1,6 +1,23 @@
 #CT50 Thermostat App
 
-This is a simple CLI app to read and control the Radio Thermostat CT50 Thermostat from the CLI.  
+This repo contains two applications for controlling the Radio Thermostat CT50 Thermostat:
+1. **thermostat** - A CLI application for command-line control
+2. **webserver** - A web-based GUI for browser-based control
+
+## Project Structure
+```
+.
+├── thermostat.go          # CLI application source
+├── cmd/
+│   └── webserver/
+│       └── main.go        # Web server application source
+├── start-webserver.sh     # Convenience script to start web server
+├── Makefile              # Build automation
+├── bin/
+│   ├── thermostat        # Compiled CLI binary
+│   └── webserver         # Compiled web server binary
+└── README.md
+```  
 
 ## Installation
 
@@ -16,14 +33,27 @@ todo
 ## Usage
 
 ### First run Setup
-The thermostat app uses a config file at ~/.config/thermostat/config.json
+Both applications use a config file at ~/.config/thermostat/config.json
 
-Run the thermostat command with --new to create a base config file.  
+Run the thermostat CLI command with --new to create a base config file.  
 ```
 thermostat --new
 ```
 
-You can now edit the newly created config file and enter the IP of your thermostat.  
+You can now edit the newly created config file and enter the IP of your thermostat.
+
+Alternatively, you can manually create the config file using the example:
+```bash
+mkdir -p ~/.config/thermostat
+cp config.example.json ~/.config/thermostat/config.json
+# Edit the file and change the IP to match your thermostat
+```
+
+---
+
+## CLI Application (thermostat)
+
+The CLI application provides command-line access to thermostat functions.  
 
 ### Get CLI options
 ```
@@ -48,10 +78,93 @@ thermostat --mode heat
 ### Set mode to Cooling
 ```
 thermostat --mode cool
-``` 
+```
 
+---
+
+## Web Server Application (webserver)
+
+The web server provides a modern, responsive web interface for controlling your thermostat from any browser.
+
+### Starting the Web Server
+```bash
+# Build the web server
+go build -o bin/webserver ./cmd/webserver
+
+# Run the web server (default port 8080)
+./bin/webserver
+
+# Run on a custom port
+./bin/webserver -port 3000
+
+# Or use the convenience script
+./start-webserver.sh
+
+# Start on a different port using the script
+./start-webserver.sh 3000
+```
+
+### Accessing the Web Interface
+Once started, open your browser and navigate to:
+```
+http://localhost:8080
+```
+
+### Features
+- **Real-time Status Display**: View current temperature, target temperature, operating mode, and system status
+- **Temperature Control**: Adjust target temperature with +/- buttons or direct input
+- **Mode Switching**: Easily switch between Off, Heat, Cool, and Auto modes
+- **Auto-refresh**: Status updates automatically every 30 seconds
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **Visual Feedback**: Color-coded status and smooth animations
+
+### Security Note
+The web server is designed for use on a local network. If you plan to expose it to the internet, consider adding authentication and using HTTPS.
+
+### Web Server Options
+```bash
+# Show version
+./bin/webserver -v
+
+# Specify custom config file
+./bin/webserver -c /path/to/config.json
+
+# Change server port
+./bin/webserver -port 3000
+```
+---
 
 ## Manual build
+
+### Using Make (Recommended)
+```bash
+# Build both applications
+make
+
+# Build only CLI
+make cli
+
+# Build only web server
+make webserver
+
+# Build and run web server
+make run-web
+
+# Clean build artifacts
+make clean
+
+# Show all available commands
+make help
 ```
-go build -o bin/thermostat
+
+### Using Go directly
+```bash
+# Build CLI application
+go build -o bin/thermostat thermostat.go
+
+# Build web server
+go build -o bin/webserver ./cmd/webserver
+
+# Build both
+go build -o bin/thermostat thermostat.go && go build -o bin/webserver ./cmd/webserver
 ```
